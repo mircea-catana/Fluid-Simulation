@@ -38,7 +38,7 @@ namespace Fluid {
 
         void create_scene() {
             mesh = new Mesh();
-            mesh->CreateGrid(3, 3);
+            mesh->CreateGrid(30, 30);
         }
 
     public:
