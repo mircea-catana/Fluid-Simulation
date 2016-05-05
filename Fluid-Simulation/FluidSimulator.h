@@ -14,6 +14,10 @@ namespace Fluid {
 #include <GL/glew.h>
 
 // LOCAL
+#include "Vec3.h"
+#include "Vec4.h"
+#include "Vertex.h"
+#include "Mesh.h"
 #include "ShaderLoader.h"
 #include "FluidEngine.h"
 
