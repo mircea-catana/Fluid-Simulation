@@ -7,6 +7,8 @@ namespace Fluid {
         ShaderLoader *shaderLoader;
         GLuint currentShaderProgram;
 
+        Mesh *mesh;
+
         void handle_input() {
             SDL_Event evnt;
 
@@ -27,9 +29,16 @@ namespace Fluid {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(currentShaderProgram);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+
+            glBindVertexArray(mesh->get_vao());
+            glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
 
             SDL_GL_SwapWindow(window);
+        }
+
+        void create_scene() {
+            mesh = new Mesh();
+            mesh->CreateGrid(3, 3);
         }
 
     public:
@@ -66,6 +75,8 @@ namespace Fluid {
 
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             glEnable(GL_DEPTH_TEST);
+
+            create_scene();
 
             shaderLoader = new ShaderLoader();
             currentShaderProgram = shaderLoader->CreateProgram("Shaders\\SmokeVS.glsl", "Shaders\\SmokeFS.glsl");
