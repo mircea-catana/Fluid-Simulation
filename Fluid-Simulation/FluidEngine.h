@@ -23,15 +23,26 @@ namespace Fluid {
             }
         }
 
+        void update_colors() {
+            Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+            for (int i = 0; i < mesh->get_vertices()->size(); ++i) {
+                Vec4 newColor = bufferData[i].get_color() + Vec4(0.001f, 0.001f, 0.001f, 0.0f);
+                bufferData[i].set_color(newColor);
+            }
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+
         void draw() {
             glClearDepth(1.0f);
             glClearColor(0.8f, 0.2f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             glUseProgram(currentShaderProgram);
+
+            update_colors();
 
             glBindVertexArray(mesh->get_vao());
             glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
+            glBindVertexArray(0);
 
             SDL_GL_SwapWindow(window);
         }

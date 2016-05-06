@@ -56,10 +56,10 @@ namespace Fluid {
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(Vec3)));
-
            
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ivbo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
+            glBindVertexArray(0);
         }
 
         unsigned int get_vao() {
@@ -76,6 +76,10 @@ namespace Fluid {
 
         std::vector<unsigned int>* get_indices() {
             return &indices;
+        }
+
+        std::vector<Vertex>* get_vertices() {
+            return &vertices;
         }
 
     };
