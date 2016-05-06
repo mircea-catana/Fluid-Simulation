@@ -31,7 +31,11 @@ namespace Fluid {
         }
 
         void set_color(Vec4 color) {
-            this->color = color;
+            float r = (color.get_x() > 1.0f) ? 1.0f : color.get_x();
+            float g = (color.get_y() > 1.0f) ? 1.0f : color.get_y();
+            float b = (color.get_z() > 1.0f) ? 1.0f : color.get_z();
+            float a = (color.get_w() > 1.0f) ? 1.0f : color.get_w();
+            this->color = Vec4(r, g, b, a);
         }
 
     };

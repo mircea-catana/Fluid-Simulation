@@ -8,6 +8,7 @@ namespace Fluid {
         GLuint currentShaderProgram;
 
         Mesh *mesh;
+        Fluid *fluid;
 
         void handle_input() {
             SDL_Event evnt;
@@ -23,22 +24,56 @@ namespace Fluid {
             }
         }
 
+        void update_colors() {
+            Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+            int width = mesh->get_mesh_width();
+            int height = mesh->get_mesh_height();
+            std::vector<float> *alpha = fluid->fluid_density(width, height);
+            for (unsigned y = 0; y < height; ++y) {
+                for (unsigned x = 0; x < width; ++x) {
+                    // Edge vertex
+                    if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+                        Vec4 vertexColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, x, width)));
+                        bufferData[XY(y, x, width)].set_color(vertexColor);
+                    // Interior vertex
+                    } else {
+                        // Need to store this because of macro
+                        int ny = y - 1; int sy = y + 1; int ex = x + 1; int wx = x - 1;
+
+                        Vec4 northColor = Vec4(fluid->get_rgb(), alpha->at(XY(ny, x, width)));
+                        Vec4 eastColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, ex, width)));
+                        Vec4 southColor = Vec4(fluid->get_rgb(), alpha->at(XY(sy, x, width)));
+                        Vec4 westColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, wx, width)));
+                        Vec4 vertexColor = (northColor + eastColor + southColor + westColor) / 4.0f;
+                        bufferData[XY(y, x, width)].set_color(vertexColor);
+                    }
+                }
+            }
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+
         void draw() {
             glClearDepth(1.0f);
-            glClearColor(0.8f, 0.2f, 0.1f, 1.0f);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             glUseProgram(currentShaderProgram);
+
+            update_colors();
 
             glBindVertexArray(mesh->get_vao());
             glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
+            glBindVertexArray(0);
 
             SDL_GL_SwapWindow(window);
         }
 
         void create_scene() {
             mesh = new Mesh();
-            mesh->CreateGrid(30, 30);
+            mesh->CreateGrid(100, 100);
+
+            fluid = new Fluid(100, 100);
+            fluid->random_fill();
         }
 
     public:
@@ -75,6 +110,9 @@ namespace Fluid {
 
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             glEnable(GL_DEPTH_TEST);
+
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
             create_scene();
 

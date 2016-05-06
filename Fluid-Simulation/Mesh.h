@@ -3,6 +3,7 @@ namespace Fluid {
     private:
         unsigned int vao;
         unsigned int vbo, ivbo;
+        int meshWidth, meshHeight;
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;
     public:
@@ -20,12 +21,13 @@ namespace Fluid {
         }
 
         void CreateGrid(int width, int height) {
+            meshWidth = width;
+            meshHeight = height;
             vertices.clear();
             for (unsigned y = 0; y < height; ++y) {
                 for (unsigned x = 0; x < width; ++x) {
-                    // TODO: CHANGE TO ACTUAL COLOR
                     vertices.push_back(Vertex(Vec3((float)x / (width - 1) * 2 - 1.0f, (float)y / (height - 1) * 2 - 1.0f, 0.0f),
-                                       Vec4(rand() % 100 / 100.0f, rand() % 100 / 100.0f, rand() % 100 / 100.0f, 1.0f)));
+                                       Vec4(1.0f, 1.0f, 1.0f, 1.0f)));
                 }
             }
 
@@ -56,10 +58,10 @@ namespace Fluid {
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(Vec3)));
-
            
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ivbo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * indices.size(), &indices[0], GL_STATIC_DRAW);
+            glBindVertexArray(0);
         }
 
         unsigned int get_vao() {
@@ -76,6 +78,18 @@ namespace Fluid {
 
         std::vector<unsigned int>* get_indices() {
             return &indices;
+        }
+
+        std::vector<Vertex>* get_vertices() {
+            return &vertices;
+        }
+
+        int get_mesh_width() {
+            return meshWidth;
+        }
+
+        int get_mesh_height() {
+            return meshHeight;
         }
 
     };

@@ -1,6 +1,8 @@
 #ifndef FLUID_SIMULATOR_H
 #define FLUID_SIMULATOR_H
 
+#define XY(I, J, W) I*W+J
+
 namespace Fluid {
 
 }
@@ -16,6 +18,7 @@ namespace Fluid {
 // LOCAL
 #include "Vec3.h"
 #include "Vec4.h"
+#include "Fluid.h"
 #include "Vertex.h"
 #include "Mesh.h"
 #include "ShaderLoader.h"
