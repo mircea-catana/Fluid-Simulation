@@ -152,6 +152,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Fluid.h" />
     <ClInclude Include="FluidEngine.h" />
     <ClInclude Include="FluidSimulator.h" />
     <ClInclude Include="Mesh.h" />
