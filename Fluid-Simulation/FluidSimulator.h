@@ -23,5 +23,6 @@ namespace Fluid {
 #include "Mesh.h"
 #include "ShaderLoader.h"
 #include "FluidEngine.h"
+#include "Solver.h"
 
 #endif;
