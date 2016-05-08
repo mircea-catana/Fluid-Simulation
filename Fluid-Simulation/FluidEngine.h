@@ -73,7 +73,8 @@ namespace Fluid {
             mesh->CreateGrid(100, 100);
 
             fluid = new Fluid(100, 100);
-            fluid->random_fill();
+           fluid->random_fill();
+			//fluid->update();
         }
 
     public:
@@ -124,8 +125,11 @@ namespace Fluid {
         }
 
         void game_loop() {
+			int i = 0;
             while (running) {
                 handle_input();
+				fluid->updateStam(i);
+				i++;
                 draw();
             }
         }
