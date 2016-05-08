@@ -36,6 +36,7 @@ namespace Fluid {
                     if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
                         Vec4 vertexColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, x, width)));
                         bufferData[XY(y, x, width)].set_color(vertexColor);
+                    
                     // Interior vertex
                     } else {
                         // Need to store this because of macro
@@ -73,8 +74,7 @@ namespace Fluid {
             mesh->CreateGrid(100, 100);
 
             fluid = new Fluid(100, 100);
-           fluid->random_fill();
-			//fluid->update();
+            fluid->clear();
         }
 
     public:
@@ -125,11 +125,11 @@ namespace Fluid {
         }
 
         void game_loop() {
-			int i = 0;
+            int frameNumber = 0;
             while (running) {
                 handle_input();
-				fluid->updateStam(i);
-				i++;
+                fluid->updateStam(frameNumber);
+                ++frameNumber;
                 draw();
             }
         }
