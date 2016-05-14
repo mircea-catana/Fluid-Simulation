@@ -28,13 +28,13 @@ namespace Fluid {
             forces = std::vector<Vec3>(width*height);
 
             //to test our mesh
-            density.resize((width + 1)*(height + 1));
-            vx.resize((width + 1)*(height + 1));
-            vy.resize((width + 1)*(height + 1));
+            density.resize((width)*(height));
+            vx.resize((width)*(height));
+            vy.resize((width)*(height));
 
-            prev_density.resize((width + 1)*(height + 1));
-            prev_vx.resize((width + 1)*(height + 1));
-            prev_vy.resize((width + 1)*(height + 1));
+            prev_density.resize((width)*(height));
+            prev_vx.resize((width)*(height));
+            prev_vy.resize((width)*(height));
 
             rgb = Vec3(1.0f, 1.0f, 1.0f);
             solver = Solver();
@@ -75,10 +75,9 @@ namespace Fluid {
             return &alphas;
         }
 
-        void updateStam(int frame_number) {
+        void updateStam(float frame_number) {
             float dt = 1.0f / 30;
-            int N = gridWidth - 1;
-            //assert(density.size() == (N + 2)*(N + 2));
+            int N = gridWidth - 2;
             float *u = vx.data(), *v = vy.data(), *u_prev = prev_vx.data(), *v_prev = prev_vy.data();
             float *dens = density.data(), *dens_prev = prev_density.data();
             float visc = 0.0f;
@@ -90,9 +89,12 @@ namespace Fluid {
 
             float c = sin(frame_number*0.01f);
             float s = cos(frame_number*0.01f);
-            density[50 + (gridWidth + 1) * 50] += 100 * dt;
-            u[50 + (gridWidth + 1) * 50] += c * (100 * dt);
-            v[50 + (gridWidth + 1) * 50] += s * (100 * dt);
+
+            int hw = gridWidth / 2;
+            int hh = gridHeight / 2;
+            density[XY((gridWidth), hh, hw)] += gridWidth * dt;
+            u[XY((gridWidth), hh, hw)] += c * (gridWidth * dt);
+            v[XY((gridWidth), hh, hw)] += s * (gridWidth * dt);
 
             solver.velocity_step(N, u, v, u_prev, v_prev, visc, dt);
             solver.density_step(N, dens, dens_prev, u, v, diff, dt);

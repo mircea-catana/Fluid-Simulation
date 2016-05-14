@@ -71,9 +71,9 @@ namespace Fluid {
 
         void create_scene() {
             mesh = new Mesh();
-            mesh->CreateGrid(100, 100);
+            mesh->CreateGrid(150, 150);
 
-            fluid = new Fluid(100, 100);
+            fluid = new Fluid(75, 75);
             fluid->clear();
         }
 
@@ -125,11 +125,11 @@ namespace Fluid {
         }
 
         void game_loop() {
-            int frameNumber = 0;
+            float frameNumber = 0;
             while (running) {
                 handle_input();
                 fluid->updateStam(frameNumber);
-                ++frameNumber;
+                frameNumber += 1.0f;
                 draw();
             }
         }
