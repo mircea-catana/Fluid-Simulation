@@ -15,6 +15,9 @@ namespace Fluid {
         std::vector<float> vx;
         std::vector<float> vy;
 
+        std::vector<float> temp;
+        std::vector<float> prev_temp;
+
         Vec3 rgb;
         std::vector<float> alphas;
 
@@ -36,7 +39,10 @@ namespace Fluid {
             prev_vx.resize((width)*(height));
             prev_vy.resize((width)*(height));
 
-            rgb = Vec3(1.0f, 1.0f, 1.0f);
+            temp.resize(width*height);
+            prev_temp.resize(width*height);
+
+            rgb = Vec3(0.6f, 0.7f, 0.9f);
             solver = Solver();
         }
 
@@ -44,12 +50,16 @@ namespace Fluid {
             for (unsigned y = 0; y < gridHeight; ++y) {
                 for (unsigned x = 0; x < gridWidth; ++x) {
                     density[XY(y, x, gridWidth)] = 0.0;
+                    // Equivalent of 27 deg Celsius on Kelvin scale
+                    temp[XY(y, x, gridWidth)] = 300;
                 }
             }
         }
 
         std::vector<float>* fluid_density(int meshWidth, int meshHeight) {
-            alphas = std::vector<float>(meshWidth*meshHeight);
+            if (alphas.size() != meshWidth*meshHeight) {
+                alphas = std::vector<float>(meshWidth*meshHeight);
+            }
 
             // Mapping Fluid Grid to Mesh Grid
             float wFactor = (float)gridWidth / (meshWidth + 1);
@@ -80,25 +90,35 @@ namespace Fluid {
             int N = gridWidth - 2;
             float *u = vx.data(), *v = vy.data(), *u_prev = prev_vx.data(), *v_prev = prev_vy.data();
             float *dens = density.data(), *dens_prev = prev_density.data();
+            float *tmp = temp.data(), *prev_tmp = prev_temp.data();
             float visc = 0.0f;
             float diff = 0.0f;
 
             std::fill(prev_vx.begin(), prev_vx.end(), 0.0f);
             std::fill(prev_vy.begin(), prev_vy.end(), 0.0f);
             std::fill(prev_density.begin(), prev_density.end(), 0.0f);
+            //std::fill(prev_temp.begin(), prev_temp.end(), 0.0f);
 
-            float c = sin(frame_number*0.01f);
-            float s = cos(frame_number*0.01f);
+            float c = sin(frame_number*0.001f);
+            float s = cos(frame_number*0.001f);
 
             int hw = gridWidth / 2;
             int hh = gridHeight / 2;
-            density[XY((gridWidth), hh, hw)] += gridWidth * dt;
-            u[XY((gridWidth), hh, hw)] += c * (gridWidth * dt);
-            v[XY((gridWidth), hh, hw)] += s * (gridWidth * dt);
+
+            density[XY(hh, hw, gridWidth)] += gridWidth * dt;
+            u[XY(hh, hw, gridWidth)] += c * (gridWidth * dt);
+            v[XY(hh, hw, gridWidth)] += s * (gridWidth * dt);
+
+            // Adding temperature influence to verical velocity
+            /*float alpha = 1.0, beta = 1.0;
+            for (unsigned i = 0; i < gridWidth*gridHeight; ++i) {
+                float f = (alpha * density[i] - beta * (temp[i] - 273)) * -9.81;
+                v[i] += f * dt * 0.001;
+            }*/
 
             solver.velocity_step(N, u, v, u_prev, v_prev, visc, dt);
             solver.density_step(N, dens, dens_prev, u, v, diff, dt);
-
+            //solver.density_step(N, tmp, prev_tmp, u, v, diff, dt);
         }
 
         Vec3 get_rgb() {

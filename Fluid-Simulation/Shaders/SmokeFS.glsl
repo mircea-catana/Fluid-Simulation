@@ -2,6 +2,15 @@
  
 in vec4 color;
 
+uniform float globalTime;
+
 void main(void) {
-    gl_FragColor = color;
+
+    if (color.a < 0.5) {
+        gl_FragColor = vec4(1.0-color.a, color.a, 0.2, color.a);
+    } else {
+        gl_FragColor = vec4(color.a, 1.0 - color.a, 0.2, color.a);
+    }
+
+    //gl_FragColor = color;
 }

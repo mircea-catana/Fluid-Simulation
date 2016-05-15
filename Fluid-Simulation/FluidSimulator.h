@@ -1,7 +1,7 @@
 #ifndef FLUID_SIMULATOR_H
 #define FLUID_SIMULATOR_H
 
-#define XY(I, J, W) I*W+J
+auto XY = [](int a, int b, int w) { return a*w + b; };
 
 namespace Fluid {
 
@@ -12,6 +12,7 @@ namespace Fluid {
 #include <math.h>
 #include <iostream>
 #include <fstream>
+#include <ppl.h>
 #include <vector>
 #include <valarray>
 #include <memory>

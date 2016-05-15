@@ -23,42 +23,51 @@ namespace Fluid {
                 }
             }
         }
-
+        
         void update_colors() {
             Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
             int width = mesh->get_mesh_width();
             int height = mesh->get_mesh_height();
             std::vector<float> *alpha = fluid->fluid_density(width, height);
+            Vec4 vertexColor;
+            
             for (unsigned y = 0; y < height; ++y) {
                 for (unsigned x = 0; x < width; ++x) {
                     // Edge vertex
                     if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
-                        Vec4 vertexColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, x, width)));
+                        vertexColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, x, width)));
                         bufferData[XY(y, x, width)].set_color(vertexColor);
-                    
+
                     // Interior vertex
                     } else {
                         // Need to store this because of macro
                         int ny = y - 1; int sy = y + 1; int ex = x + 1; int wx = x - 1;
 
-                        Vec4 northColor = Vec4(fluid->get_rgb(), alpha->at(XY(ny, x, width)));
-                        Vec4 eastColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, ex, width)));
-                        Vec4 southColor = Vec4(fluid->get_rgb(), alpha->at(XY(sy, x, width)));
-                        Vec4 westColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, wx, width)));
-                        Vec4 vertexColor = (northColor + eastColor + southColor + westColor) / 4.0f;
+                        float a1 = (alpha->at(XY(ny, x, width)) + alpha->at(XY(y, ex, width)) +
+                                    alpha->at(XY(sy, x, width)) + alpha->at(XY(y, wx, width))) / 4.0f;
+                        float a2 = (alpha->at(XY(ny, ex, width)) + alpha->at(XY(sy, ex, width)) +
+                                    alpha->at(XY(sy, wx, width)) + alpha->at(XY(ny, wx, width))) / 4.0f;
+
+                        vertexColor = Vec4(fluid->get_rgb(), (a1 + a2) / 2.0f);
                         bufferData[XY(y, x, width)].set_color(vertexColor);
                     }
                 }
             }
+            
+
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
 
         void draw() {
             glClearDepth(1.0f);
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClearColor(0.08f, 0.18f, 0.35f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glUseProgram(currentShaderProgram);
+
+            float globalTime = (float)SDL_GetTicks() / 1000.0f;
+            GLuint globalTimePosition = glGetUniformLocation(currentShaderProgram, "globalTime");
+            glUniform1f(globalTimePosition, globalTime);
 
             update_colors();
 
@@ -71,9 +80,9 @@ namespace Fluid {
 
         void create_scene() {
             mesh = new Mesh();
-            mesh->CreateGrid(150, 150);
+            mesh->CreateGrid(500, 500);
 
-            fluid = new Fluid(75, 75);
+            fluid = new Fluid(250, 250);
             fluid->clear();
         }
 
