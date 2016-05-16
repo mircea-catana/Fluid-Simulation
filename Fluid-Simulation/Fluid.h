@@ -90,14 +90,14 @@ namespace Fluid {
             int N = gridWidth - 2;
             float *u = vx.data(), *v = vy.data(), *u_prev = prev_vx.data(), *v_prev = prev_vy.data();
             float *dens = density.data(), *dens_prev = prev_density.data();
-            float *tmp = temp.data(), *prev_tmp = prev_temp.data();
+            //float *tmp = temp.data(), *prev_tmp = prev_temp.data();
             float visc = 0.0f;
             float diff = 0.0f;
 
             std::fill(prev_vx.begin(), prev_vx.end(), 0.0f);
             std::fill(prev_vy.begin(), prev_vy.end(), 0.0f);
             std::fill(prev_density.begin(), prev_density.end(), 0.0f);
-            //std::fill(prev_temp.begin(), prev_temp.end(), 0.0f);
+            //  std::fill(prev_temp.begin(), prev_temp.end(), 0.0f);
 
             float c = sin(frame_number*0.001f);
             float s = cos(frame_number*0.001f);
@@ -110,11 +110,15 @@ namespace Fluid {
             v[XY(hh, hw, gridWidth)] += s * (gridWidth * dt);
 
             // Adding temperature influence to verical velocity
-            /*float alpha = 1.0, beta = 1.0;
+   /*         float alpha = 1.0, beta = 1.0;
             for (unsigned i = 0; i < gridWidth*gridHeight; ++i) {
                 float f = (alpha * density[i] - beta * (temp[i] - 273)) * -9.81;
                 v[i] += f * dt * 0.001;
-            }*/
+            }
+*/
+
+            solver.someVorticity(N, u, v, dt, 0.5);
+
 
             solver.velocity_step(N, u, v, u_prev, v_prev, visc, dt);
             solver.density_step(N, dens, dens_prev, u, v, diff, dt);
