@@ -80,9 +80,9 @@ namespace Fluid {
 
         void create_scene() {
             mesh = new Mesh();
-            mesh->CreateGrid(500, 500);
+            mesh->CreateGrid(150, 150);
 
-            fluid = new Fluid(250, 250);
+            fluid = new Fluid(75, 75);
             fluid->clear();
         }
 
