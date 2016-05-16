@@ -4,7 +4,7 @@ namespace Fluid {
     class Solver {
     private:
 
-		enum advectionMode {ForwardEuler,RK2,RK3,RK4} _mode;
+        enum advectionMode { ForwardEuler, RK2, RK3, RK4 } _mode;
 
         void set_boundary(int N, int b, float * x) {
             auto IX = [=](int i, int j) { return i + (N + 2)*j; };
@@ -27,18 +27,18 @@ namespace Fluid {
 
             for (int k = 0; k < 20; k++) {
                 //for (int i = 1; i <= N; i++) {
-                    
+
             //concurrency::parallel_for(size_t(0), size_t(20), [&](size_t ky) {
-                concurrency::parallel_for(size_t(1), size_t(N+1), [&](size_t i) {
+                concurrency::parallel_for(size_t(1), size_t(N + 1), [&](size_t i) {
                     for (int j = 1; j <= N; j++) {
                         x[IX(i, j)] = (x0[IX(i, j)] + a*(x[IX(i - 1, j)] + x[IX(i + 1, j)] + x[IX(i, j - 1)] + x[IX(i, j + 1)])) / c;
                     }
 
                     set_boundary(N, b, x);
                 });
-            //});
+                //});
 
-                //}
+                    //}
             }
         }
 
@@ -56,29 +56,31 @@ namespace Fluid {
                     // (x, y) is the address to copy from
                     // this is Forward Euler method:
                     //(other methods could be: Modified Euler and RK2)
-					float x, y;
+                    float x, y;
 
-					switch (_mode) {
+                    switch (_mode) {
 
-					case ForwardEuler:
-						x = i - dt0*u[IX(i, j)]; y = j - dt0*v[IX(i, j)];
-						break;
-					case RK2:{
-					float xMid = i - 0.5*dt0*u[IX(i, j)], yMid = j - 0.5*dt0*v[IX(i, j)];
-					x = i - dt0*u[IX(xMid, yMid)]; y = j - dt0*v[IX(xMid, yMid)];
-						}
-						break;
-					case RK4: {
-						float k1x = u[IX(i, j)], k1y = v[IX(i, j)];
-						float k2x = u[IX(i - 0.5*dt0*k1x, j - 0.5*dt0*k1y)], k2y = v[IX(i - 0.5*dt0*k1x, j - 0.5*dt0*k1y)];
-						float k3x = u[IX(i - 0.5*dt0*k2x, j - 0.5*dt0*k2y)], k3y = v[IX(i - 0.5*dt0*k2x, j - 0.5*dt0*k2y)];
-						float k4x = u[IX(i - dt0*k3x, j - dt0*k3y)], k4y = v[IX(i - dt0*k3x, j - dt0*k3y)];
-						x = i - (dt0 / 6)*(k1x + 2 * k2x + 2 * k3x + k4x); y = j - (dt0 / 6)*(k1y + 2 * k2y + 2 * k3y + k4y);
-					}
-						break;
-					default://Forward Euler(default)
-						float x = i - dt0*u[IX(i, j)], y = j - dt0*v[IX(i, j)]; 
-					}
+                    case ForwardEuler:
+                        x = i - dt0*u[IX(i, j)]; y = j - dt0*v[IX(i, j)];
+                        break;
+                    case RK2:
+                    {
+                        float xMid = i - 0.5*dt0*u[IX(i, j)], yMid = j - 0.5*dt0*v[IX(i, j)];
+                        x = i - dt0*u[IX(xMid, yMid)]; y = j - dt0*v[IX(xMid, yMid)];
+                    }
+                    break;
+                    case RK4:
+                    {
+                        float k1x = u[IX(i, j)], k1y = v[IX(i, j)];
+                        float k2x = u[IX(i - 0.5*dt0*k1x, j - 0.5*dt0*k1y)], k2y = v[IX(i - 0.5*dt0*k1x, j - 0.5*dt0*k1y)];
+                        float k3x = u[IX(i - 0.5*dt0*k2x, j - 0.5*dt0*k2y)], k3y = v[IX(i - 0.5*dt0*k2x, j - 0.5*dt0*k2y)];
+                        float k4x = u[IX(i - dt0*k3x, j - dt0*k3y)], k4y = v[IX(i - dt0*k3x, j - dt0*k3y)];
+                        x = i - (dt0 / 6)*(k1x + 2 * k2x + 2 * k3x + k4x); y = j - (dt0 / 6)*(k1y + 2 * k2y + 2 * k3y + k4y);
+                    }
+                    break;
+                    default://Forward Euler(default)
+                        float x = i - dt0*u[IX(i, j)], y = j - dt0*v[IX(i, j)];
+                    }
 
                     // clamp x and y within the grid
                     if (x<0.5f) x = 0.5f; else if (x>N + 0.5f) x = N + 0.5f;
@@ -138,13 +140,13 @@ namespace Fluid {
 
     public:
 
-		Solver(advectionMode Mode) {
-			_mode = Mode;
-		}
-		
-		Solver() {
-			_mode = ForwardEuler;
-		}
+        Solver(advectionMode Mode) {
+            _mode = Mode;
+        }
+
+        Solver() {
+            _mode = ForwardEuler;
+        }
 
 
         void density_step(int N, float * x, float * x0, float * u, float * v, float diff, float dt) {
@@ -175,25 +177,24 @@ namespace Fluid {
 
             // stabilise the system using poisson
             project(N, u, v, u0, v0);
-		}
+        }
 
-		void someVorticity(int N, float *u, float *v, float dt,float k)
-		{
-			auto IX = [=](int i, int j) { return i + (N + 2)*j; };
-			auto Vort = [=](int i, int j) { return 0.5*(v[IX(i+1, j)] - v[IX(i-1, j)] + u[IX(i, j-1)] - u[IX(i, j+1)])*dt; };
+        void someVorticity(int N, float *u, float *v, float dt, float k) {
+            auto IX = [=](int i, int j) { return i + (N + 2)*j; };
+            auto Vort = [=](int i, int j) { return 0.5*(v[IX(i + 1, j)] - v[IX(i - 1, j)] + u[IX(i, j - 1)] - u[IX(i, j + 1)])*dt; };
 
-			float vorticity = 0.0;
-			for (int i = 2; i <= N-1; i++) {
-				for (int j = 2; j <= N-1; j++) {
-					vorticity = k*Vort(i, j);
-					u[IX(i, j+1)] += vorticity;
-					u[IX(i, j-1)] += vorticity;
-					v[IX(i-1, j)] += vorticity;
-					v[IX(i+1, j)] += vorticity;
-				}
-			}
+            float vorticity = 0.0;
+            for (int i = 2; i <= N - 1; i++) {
+                for (int j = 2; j <= N - 1; j++) {
+                    vorticity = k*Vort(i, j);
+                    u[IX(i, j + 1)] += vorticity;
+                    u[IX(i, j - 1)] += vorticity;
+                    v[IX(i - 1, j)] += vorticity;
+                    v[IX(i + 1, j)] += vorticity;
+                }
+            }
 
-		}
+        }
 
     };
 }

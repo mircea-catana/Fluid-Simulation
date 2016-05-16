@@ -15,15 +15,15 @@ namespace Fluid {
 
             while (SDL_PollEvent(&evnt)) {
                 switch (evnt.type) {
-                    case SDL_QUIT:
-                        running = false;
-                        break;
-                    default:
-                        break;
+                case SDL_QUIT:
+                    running = false;
+                    break;
+                default:
+                    break;
                 }
             }
         }
-        
+
         void update_colors() {
             Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
@@ -31,7 +31,7 @@ namespace Fluid {
             int height = mesh->get_mesh_height();
             std::vector<float> *alpha = fluid->fluid_density(width, height);
             Vec4 vertexColor;
-            
+
             for (unsigned y = 0; y < height; ++y) {
                 for (unsigned x = 0; x < width; ++x) {
                     // Edge vertex
@@ -39,22 +39,22 @@ namespace Fluid {
                         vertexColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, x, width)));
                         bufferData[XY(y, x, width)].set_color(vertexColor);
 
-                    // Interior vertex
+                        // Interior vertex
                     } else {
                         // Need to store this because of macro
                         int ny = y - 1; int sy = y + 1; int ex = x + 1; int wx = x - 1;
 
                         float a1 = (alpha->at(XY(ny, x, width)) + alpha->at(XY(y, ex, width)) +
-                                    alpha->at(XY(sy, x, width)) + alpha->at(XY(y, wx, width))) / 4.0f;
+                            alpha->at(XY(sy, x, width)) + alpha->at(XY(y, wx, width))) / 4.0f;
                         float a2 = (alpha->at(XY(ny, ex, width)) + alpha->at(XY(sy, ex, width)) +
-                                    alpha->at(XY(sy, wx, width)) + alpha->at(XY(ny, wx, width))) / 4.0f;
+                            alpha->at(XY(sy, wx, width)) + alpha->at(XY(ny, wx, width))) / 4.0f;
 
                         vertexColor = Vec4(fluid->get_rgb(), (a1 + a2) / 2.0f);
                         bufferData[XY(y, x, width)].set_color(vertexColor);
                     }
                 }
             }
-            
+
 
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
