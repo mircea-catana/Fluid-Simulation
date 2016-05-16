@@ -156,11 +156,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Fluid.h" />
+    <ClInclude Include="Fluid3D.h" />
     <ClInclude Include="FluidEngine.h" />
     <ClInclude Include="FluidSimulator.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="Solver.h" />
+    <ClInclude Include="Solver3D.h" />
     <ClInclude Include="Vec3.h" />
     <ClInclude Include="Vec4.h" />
     <ClInclude Include="Vertex.h" />
