@@ -97,7 +97,7 @@ namespace Fluid {
             std::fill(prev_vx.begin(), prev_vx.end(), 0.0f);
             std::fill(prev_vy.begin(), prev_vy.end(), 0.0f);
             std::fill(prev_density.begin(), prev_density.end(), 0.0f);
-          //  std::fill(prev_temp.begin(), prev_temp.end(), 0.0f);
+            //  std::fill(prev_temp.begin(), prev_temp.end(), 0.0f);
 
             float c = sin(frame_number*0.001f);
             float s = cos(frame_number*0.001f);
@@ -117,7 +117,7 @@ namespace Fluid {
             }
 */
 
-			solver.someVorticity(N, u, v, dt,0.5);
+            solver.someVorticity(N, u, v, dt, 0.5);
 
 
             solver.velocity_step(N, u, v, u_prev, v_prev, visc, dt);
