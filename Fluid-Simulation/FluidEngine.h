@@ -1,6 +1,9 @@
 namespace Fluid {
     class FluidEngine {
     private:
+        enum FluidMode { _2D, _3D };
+
+        FluidMode fluidMode;
         bool running;
         SDL_Window *window;
 
@@ -9,6 +12,7 @@ namespace Fluid {
 
         Mesh *mesh;
         Fluid *fluid;
+        Fluid3D *fluid3D;
 
         void handle_input() {
             SDL_Event evnt;
@@ -24,7 +28,7 @@ namespace Fluid {
             }
         }
 
-        void update_colors() {
+        void update_colors_2D() {
             Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
             int width = mesh->get_mesh_width();
@@ -59,6 +63,41 @@ namespace Fluid {
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
 
+        void update_colors_3D() {
+            Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+            int width = mesh->get_mesh_width();
+            int height = mesh->get_mesh_height();
+            std::vector<float> *alpha = fluid3D->fluid_density(width, height);
+            Vec4 vertexColor;
+
+            for (unsigned y = 0; y < height; ++y) {
+                for (unsigned x = 0; x < width; ++x) {
+                    // Edge vertex
+                    if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
+                        vertexColor = Vec4(fluid3D->get_rgb(), alpha->at(XY(y, x, width)));
+                        bufferData[XY(y, x, width)].set_color(vertexColor);
+
+                        // Interior vertex
+                    } else {
+                        // Need to store this because of macro
+                        int ny = y - 1; int sy = y + 1; int ex = x + 1; int wx = x - 1;
+
+                        float a1 = (alpha->at(XY(ny, x, width)) + alpha->at(XY(y, ex, width)) +
+                                    alpha->at(XY(sy, x, width)) + alpha->at(XY(y, wx, width))) / 4.0f;
+                        float a2 = (alpha->at(XY(ny, ex, width)) + alpha->at(XY(sy, ex, width)) +
+                                    alpha->at(XY(sy, wx, width)) + alpha->at(XY(ny, wx, width))) / 4.0f;
+
+                        vertexColor = Vec4(fluid3D->get_rgb(), (a1 + a2) / 2.0f);
+                        bufferData[XY(y, x, width)].set_color(vertexColor);
+                    }
+                }
+            }
+
+
+            glUnmapBuffer(GL_ARRAY_BUFFER);
+        }
+
         void draw() {
             glClearDepth(1.0f);
             glClearColor(0.08f, 0.18f, 0.35f, 1.0f);
@@ -69,7 +108,11 @@ namespace Fluid {
             GLuint globalTimePosition = glGetUniformLocation(currentShaderProgram, "globalTime");
             glUniform1f(globalTimePosition, globalTime);
 
-            update_colors();
+            if (fluidMode == _2D) {
+                update_colors_2D();
+            } else if (fluidMode == _3D) {
+                update_colors_3D();
+            }
 
             glBindVertexArray(mesh->get_vao());
             glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
@@ -80,10 +123,17 @@ namespace Fluid {
 
         void create_scene() {
             mesh = new Mesh();
-            mesh->CreateGrid(150, 150);
+            fluidMode = _3D;
 
-            fluid = new Fluid(75, 75);
-            fluid->clear();
+            if (fluidMode == _2D) {
+                mesh->CreateGrid(150, 150);
+                fluid = new Fluid(75, 75);
+                fluid->clear();
+            } else if (fluidMode == _3D) {
+                mesh->CreateGrid(50, 50);
+                fluid3D = new Fluid3D(50);
+                fluid3D->clear();
+            }
         }
 
     public:
@@ -137,7 +187,13 @@ namespace Fluid {
             float frameNumber = 0;
             while (running) {
                 handle_input();
-                fluid->updateStam(frameNumber);
+
+                if (fluidMode == _2D) {
+                    fluid->updateStam(frameNumber);
+                } else if (fluidMode == _3D) {
+                    fluid3D->update_stam(frameNumber);
+                }
+                
                 frameNumber += 1.0f;
                 draw();
             }
