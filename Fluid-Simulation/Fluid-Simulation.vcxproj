@@ -160,6 +160,7 @@
     <ClInclude Include="FluidEngine.h" />
     <ClInclude Include="FluidSimulator.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="Solver.h" />
     <ClInclude Include="Solver3D.h" />

@@ -11,8 +11,25 @@ namespace Fluid {
         GLuint currentShaderProgram;
 
         Mesh *mesh;
+        Mesh3D *mesh3D;
+
         Fluid *fluid;
         Fluid3D *fluid3D;
+
+        float modelToWorld[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                                   0.0f, 1.0f, 0.0f, 0.0f,
+                                   0.0f, 0.0f, 1.0f, 0.0f,
+                                   0.0f, 0.0f, -4.0f, 1.0f };
+
+        float worldToView[16] = { 1.0f, 0.0f, 0.0f, 0.0f, 
+                                  0.0f, 1.0f, 0.0f, 0.0f,
+                                  0.0f, 0.0f, 1.0f, 0.0f,
+                                  0.0f, 0.0f, 0.0f, 1.0f };
+
+        float viewToProjection[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                                       0.0f, 1.0f, 0.0f, 0.0f,
+                                       0.0f, 0.0f, 1.0f, 0.0f,
+                                       0.0f, 0.0f, 0.0f, 1.0f };
 
         void handle_input() {
             SDL_Event evnt;
@@ -40,21 +57,21 @@ namespace Fluid {
                 for (unsigned x = 0; x < width; ++x) {
                     // Edge vertex
                     if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
-                        vertexColor = Vec4(fluid->get_rgb(), alpha->at(XY(y, x, width)));
-                        bufferData[XY(y, x, width)].set_color(vertexColor);
+                        vertexColor = Vec4(fluid->get_rgb(), alpha->at(YX(y, x, width)));
+                        bufferData[YX(y, x, width)].set_color(vertexColor);
 
                         // Interior vertex
                     } else {
                         // Need to store this because of macro
                         int ny = y - 1; int sy = y + 1; int ex = x + 1; int wx = x - 1;
 
-                        float a1 = (alpha->at(XY(ny, x, width)) + alpha->at(XY(y, ex, width)) +
-                            alpha->at(XY(sy, x, width)) + alpha->at(XY(y, wx, width))) / 4.0f;
-                        float a2 = (alpha->at(XY(ny, ex, width)) + alpha->at(XY(sy, ex, width)) +
-                            alpha->at(XY(sy, wx, width)) + alpha->at(XY(ny, wx, width))) / 4.0f;
+                        float a1 = (alpha->at(YX(ny, x, width)) + alpha->at(YX(y, ex, width)) +
+                            alpha->at(YX(sy, x, width)) + alpha->at(YX(y, wx, width))) / 4.0f;
+                        float a2 = (alpha->at(YX(ny, ex, width)) + alpha->at(YX(sy, ex, width)) +
+                            alpha->at(YX(sy, wx, width)) + alpha->at(YX(ny, wx, width))) / 4.0f;
 
                         vertexColor = Vec4(fluid->get_rgb(), (a1 + a2) / 2.0f);
-                        bufferData[XY(y, x, width)].set_color(vertexColor);
+                        bufferData[YX(y, x, width)].set_color(vertexColor);
                     }
                 }
             }
@@ -66,39 +83,39 @@ namespace Fluid {
         void update_colors_3D() {
             Vertex *bufferData = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
-            int width = mesh->get_mesh_width();
-            int height = mesh->get_mesh_height();
-            std::vector<float> *alpha = fluid3D->fluid_density(width, height);
+            int size = mesh3D->get_mesh_size();
+            std::vector<float> *alpha = fluid3D->fluid_density(size);
             Vec4 vertexColor;
 
-            for (unsigned y = 0; y < height; ++y) {
-                for (unsigned x = 0; x < width; ++x) {
-                    // Edge vertex
-                    if (x == 0 || x == width - 1 || y == 0 || y == height - 1) {
-                        vertexColor = Vec4(fluid3D->get_rgb(), alpha->at(XY(y, x, width)));
-                        bufferData[XY(y, x, width)].set_color(vertexColor);
+            for (unsigned z = 0; z < size; ++z) {
+                for (unsigned y = 0; y < size; ++y) {
+                    for (unsigned x = 0; x < size; ++x) {
+                        // Edge vertex
+                        if (x == 0 || x == size - 1 || y == 0 || y == size - 1 || z == 0 || z == size - 1) {
+                            vertexColor = Vec4(fluid3D->get_rgb(), alpha->at(ZYX(z, y, x, size)));
+                            bufferData[ZYX(z, y, x, size)].set_color(vertexColor);
 
-                        // Interior vertex
-                    } else {
-                        // Need to store this because of macro
-                        int ny = y - 1; int sy = y + 1; int ex = x + 1; int wx = x - 1;
+                            // Interior vertex
+                        } else {
 
-                        float a1 = (alpha->at(XY(ny, x, width)) + alpha->at(XY(y, ex, width)) +
-                                    alpha->at(XY(sy, x, width)) + alpha->at(XY(y, wx, width))) / 4.0f;
-                        float a2 = (alpha->at(XY(ny, ex, width)) + alpha->at(XY(sy, ex, width)) +
-                                    alpha->at(XY(sy, wx, width)) + alpha->at(XY(ny, wx, width))) / 4.0f;
+                            float a1 = alpha->at(ZYX(z, y, x - 1, size)) + alpha->at(ZYX(z, y, x + 1, size)) +
+                                       alpha->at(ZYX(z, y - 1, x, size)) + alpha->at(ZYX(z, y + 1, x, size));
+                            float a2 = alpha->at(ZYX(z-1, y, x - 1, size)) + alpha->at(ZYX(z-1, y, x + 1, size)) +
+                                       alpha->at(ZYX(z-1, y - 1, x, size)) + alpha->at(ZYX(z-1, y + 1, x, size));
 
-                        vertexColor = Vec4(fluid3D->get_rgb(), (a1 + a2) / 2.0f);
-                        bufferData[XY(y, x, width)].set_color(vertexColor);
+                            vertexColor = Vec4(fluid3D->get_rgb(), (a1 + a2) / 2.0f);
+                            bufferData[ZYX(z, y, x, size)].set_color(vertexColor);
+                        }
                     }
                 }
             }
-
-
+            
             glUnmapBuffer(GL_ARRAY_BUFFER);
         }
 
         void draw() {
+            //modelToWorld[14] -= 0.002f;
+
             glClearDepth(1.0f);
             glClearColor(0.08f, 0.18f, 0.35f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -108,33 +125,67 @@ namespace Fluid {
             GLuint globalTimePosition = glGetUniformLocation(currentShaderProgram, "globalTime");
             glUniform1f(globalTimePosition, globalTime);
 
+            GLuint mtwPosition = glGetUniformLocation(currentShaderProgram, "modelToWorld");
+            glUniformMatrix4fv(mtwPosition, 1, GL_FALSE, modelToWorld);
+
+            GLuint wtvPosition = glGetUniformLocation(currentShaderProgram, "worldToView");
+            glUniformMatrix4fv(wtvPosition, 1, GL_FALSE, worldToView);
+
+            GLuint vtpPosition = glGetUniformLocation(currentShaderProgram, "viewToProjection");
+            glUniformMatrix4fv(vtpPosition, 1, GL_FALSE, viewToProjection);
+
             if (fluidMode == _2D) {
                 update_colors_2D();
+                glBindVertexArray(mesh->get_vao());
+                glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
+                glBindVertexArray(0);
             } else if (fluidMode == _3D) {
                 update_colors_3D();
+                glBindVertexArray(mesh3D->get_vao());
+                glDrawElements(GL_TRIANGLES, mesh3D->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
+                glBindVertexArray(0);
             }
 
-            glBindVertexArray(mesh->get_vao());
-            glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
-            glBindVertexArray(0);
+            
 
             SDL_GL_SwapWindow(window);
         }
 
         void create_scene() {
-            mesh = new Mesh();
-
             fluidMode = _3D;
-
+            set_perspective_camera();
             if (fluidMode == _2D) {
+                mesh = new Mesh();
                 mesh->CreateGrid(150, 150);
                 fluid = new Fluid(150, 150);
                 fluid->clear();
             } else if (fluidMode == _3D) {
-                mesh->CreateGrid(25, 25);
-                fluid3D = new Fluid3D(25);
+                mesh3D = new Mesh3D();
+                mesh3D->CreateCube(20);
+                fluid3D = new Fluid3D(20);
                 fluid3D->clear();
             }
+        }
+        
+
+        // Should move to own class
+        void set_perspective_camera() {
+            float fovy = 60.0f;
+            float aspect = (float)1024 / 768;
+            float zNear = 0.1f;
+            float zFar = 500.0f;
+
+            float deltaZ = zFar - zNear;
+            float radians = fovy / 2.0f * 3.1415f / 180.0f;
+            float s = sin(radians);
+            float ctg = cos(radians) / s;
+
+            viewToProjection[0] = ctg / aspect;
+            viewToProjection[5] = ctg;
+            viewToProjection[10] = -(zFar + zNear) / deltaZ;
+            viewToProjection[11] = -1.0f;
+            viewToProjection[14] = -2.0f * zNear * zFar / deltaZ;
+            viewToProjection[15] = 0.0f;
         }
 
     public:
