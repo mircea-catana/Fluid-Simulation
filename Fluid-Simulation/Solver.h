@@ -182,9 +182,10 @@ namespace Fluid {
         }
 
         void someVorticity(int N, float *u, float *v, float dt, float k) {
-        //   implementation adapted from intro in "The Development and Applications of a Numerical Method for Compressible Vorticity Confinement in Vortex-Dominant Flows"
+        //   2D implementation adapted from intro in "The Development and Applications of a Numerical Method for Compressible Vorticity Confinement in Vortex-Dominant Flows"
         //     by  Guangchu Hu
-        // k = 5000 seems to give nice results
+        // k = 5000 seems to give nice results using Forward Euler
+        // k = 10000 for RK4
 
 
             auto IX = [=](int i, int j) { return i + (N + 2)*j; };

@@ -115,9 +115,11 @@ namespace Fluid {
             y[XYZ(hSize, hSize, hSize, gridSize)] += c * gridSize * dt;
             z[XYZ(hSize, hSize, hSize, gridSize)] += (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
             // End Sources
-
+            
+            //solver.vorticity(N, x, y, z, dt, 150);
             solver.velocity_step(N, x, y, z, x0, y0, z0, visc, dt);
             solver.density_step(N, x, y, z, dens, dens0, diff, dt);
+            
         }
 
         Vec3 get_rgb() {

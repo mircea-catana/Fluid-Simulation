@@ -118,7 +118,7 @@ namespace Fluid {
             }
 */
 
-            solver.someVorticity(N, u, v, dt, 80000);
+           solver.someVorticity(N, u, v, dt, 80000);
 
 
             solver.velocity_step(N, u, v, u_prev, v_prev, visc, dt);
