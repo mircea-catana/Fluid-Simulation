@@ -10,7 +10,7 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
     class Solver3D {
     private:
 
-        void gauss_seidel(int N, float *d, float *d0, float diff, float divisor) {
+        void gauss_seidel(int N, int b, float *d, float *d0, float diff, float divisor) {
             float div = 1.0f / divisor;
 
             for (unsigned k = 0; k < 20; ++k) {
@@ -22,14 +22,16 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
                 END_FOR_CELL
 
             }
+
+            set_boundary(N, b, d);
         }
 
-        void diffuse(int N, float *d, float *d0, float diff, float dt) {
+        void diffuse(int N, int b, float *d, float *d0, float diff, float dt) {
             float a = diff * dt * (N * N * N);
-            gauss_seidel(N, d, d0, a, (1 + 6 * a));
+            gauss_seidel(N, b, d, d0, a, (1 + 6 * a));
         }
 
-        void advect(int N, float *d, float *d0, float *vx, float *vy, float *vz, float dt) {
+        void advect(int N, int b, float *d, float *d0, float *vx, float *vy, float *vz, float dt) {
             float dt0 = dt * N;
 
             FOR_CELL
@@ -57,7 +59,9 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
                                      a1 * b0 * c1 * d0[IJK(i1, j0, k1, N)] +
                                      a1 * b1 * c0 * d0[IJK(i1, j1, k0, N)] +
                                      a1 * b1 * c1 * d0[IJK(i1, j1, k1, N)];
-            END_FOR_CELL
+                END_FOR_CELL
+
+                set_boundary(N, b, d);
 
         }
 
@@ -71,40 +75,50 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
                 g[ind] = 0.0f;
             END_FOR_CELL
 
-            gauss_seidel(N, g, g0, 1, 6);
+            // copy pixels to boundary
+            set_boundary(N, 0, g0);
+            set_boundary(N, 0, g);
+
+            gauss_seidel(N, 0, g, g0, 1, 6);
 
             FOR_CELL
                 vx[ind] -= 0.5 * N * (g[IJK(x + 1, y, z, N)] - g[IJK(x - 1, y, z, N)]);
                 vy[ind] -= 0.5 * N * (g[IJK(x, y + 1, z, N)] - g[IJK(x, y - 1, z, N)]);
                 vz[ind] -= 0.5 * N * (g[IJK(x, y, z + 1, N)] - g[IJK(x, y, z - 1, N)]);
             END_FOR_CELL
+
+            // copy velocity to boundary
+            set_boundary(N, 1, vx);
+            set_boundary(N, 2, vy);
+            set_boundary(N, 3, vz);
+            
         }
 
     public:
         void density_step(int N, float *vx, float *vy, float *vz, float *d, float *d0, float diff, float dt) {
             std::swap(d0, d);
-            diffuse(N, d, d0, diff, dt);
+            diffuse(N, 0, d, d0, diff, dt);
 
             std::swap(d0, d);
-            advect(N, d, d0, vx, vy, vz, dt);
+            advect(N, 0, d, d0, vx, vy, vz, dt);
         }
 
         void velocity_step(int N, float *vx, float *vy, float *vz, float *vx0, float *vy0, float *vz0, float visc, float dt) {
             std::swap(vx0, vx);
-            diffuse(N, vx, vx0, visc, dt);
+            diffuse(N, 1, vx, vx0, visc, dt);
             std::swap(vy0, vy);
-            diffuse(N, vy, vy0, visc, dt);
+            diffuse(N, 2, vy, vy0, visc, dt);
             std::swap(vz0, vz);
-            diffuse(N, vz, vz0, visc, dt);
+            diffuse(N, 3, vz, vz0, visc, dt);
 
             project(N, vx, vy, vz, vx0, vy0);
 
             std::swap(vx0, vx);
             std::swap(vy0, vy);
             std::swap(vz0, vz);
-            advect(N, vx, vx0, vx0, vy0, vz0, dt);
-            advect(N, vy, vy0, vx0, vy0, vz0, dt);
-            advect(N, vz, vz0, vx0, vy0, vz0, dt);
+            advect(N, 1, vx, vx0, vx0, vy0, vz0, dt);
+            advect(N, 2, vy, vy0, vx0, vy0, vz0, dt);
+            advect(N, 3, vz, vz0, vx0, vy0, vz0, dt);
 
             project(N, vx, vy, vz, vx0, vy0);
         }
@@ -153,6 +167,30 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
             END_FOR_CELL
         }
 
+        void set_boundary(int N, int b, float * x) {
+            //plane boundaries
+            for (int i = 1; i <= N; i++) {
+                for (int j = 1; i <= N; i++) {
+                    x[IJK(0, i, j, N)] = b == 1 ? -x[IJK(1, i, j, N)] : x[IJK(1, i, j, N)];
+                    x[IJK(N + 1, i, j, N)] = b == 1 ? -x[IJK(N, i, j, N)] : x[IJK(N, i, j, N)];
+
+                    x[IJK(i, 0, j, N)] = b == 2 ? -x[IJK(i, 0, j, N)] : x[IJK(i, 0, j, N)];
+                    x[IJK(i, N+1, j, N)] = b == 2 ? -x[IJK(i, N, j, N)] : x[IJK(i, N, j, N)];
+
+                    x[IJK(i, j, 0, N)] = b == 3 ? -x[IJK(i, j, 1, N)] : x[IJK(i, j, 1, N)];
+                    x[IJK(i, j, N+1, N)] = b == 3 ? -x[IJK(i, j, N, N)] : x[IJK(i, j, N, N)];
+                }
+            }
+            //corner boundaries
+            x[IJK(0, 0, 0, N)] = 0.333f*(x[IJK(1, 0, 0, N)] + x[IJK(0, 1, 0, N)] + x[IJK(0, 0, 1, N)]);
+            x[IJK(0, 0, N + 1, N)] = 0.333f*(x[IJK(1, 0, N + 1, N)] + x[IJK(0, 1, N + 1, N)] + x[IJK(0, 0, N, N)]);
+            x[IJK(0, N + 1, 0, N)] = 0.333f*(x[IJK(1, N+1, 0, N)] + x[IJK(0, N, 0, N)] + x[IJK(0, N + 1, 1, N)]);
+            x[IJK(0, N + 1, N + 1, N)] = 0.333f*(x[IJK(1, N + 1, N + 1, N)] + x[IJK(0, N, N + 1, N)] + x[IJK(0, N + 1, N, N)]);
+            x[IJK(N + 1, 0, 0, N)] = 0.333f*(x[IJK(N, 0, 0, N)] + x[IJK(N + 1, 1, 0, N)] + x[IJK(N + 1, 0, 1, N)]);
+            x[IJK(N + 1, 0, N + 1, N)] = 0.333f*(x[IJK(N, 0, N + 1, N)] + x[IJK(N + 1, 1, N + 1, N)] + x[IJK(N + 1, 0, N, N)]);
+            x[IJK(N + 1, N + 1, 0, N)] = 0.333f*(x[IJK(N, N + 1, 0, N)] + x[IJK(N + 1, N, 0, N)] + x[IJK(N + 1, N + 1, 1, N)]);
+            x[IJK(N + 1, N + 1, N + 1, N)] = 0.333f*(x[IJK(N, N + 1, N + 1, N)] + x[IJK(N + 1, N, N + 1, N)] + x[IJK(N + 1, N + 1, N, N)]);
+        }
 
     };
 
