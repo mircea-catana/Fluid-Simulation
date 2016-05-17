@@ -26,19 +26,19 @@ namespace Fluid {
             auto IX = [=](int i, int j) { return i + (N + 2)*j; };
 
             for (int k = 0; k < 20; k++) {
-                //for (int i = 1; i <= N; i++) {
-
+                for (int i = 1; i <= N; i++) {
+                    
             //concurrency::parallel_for(size_t(0), size_t(20), [&](size_t ky) {
-                concurrency::parallel_for(size_t(1), size_t(N + 1), [&](size_t i) {
+                //concurrency::parallel_for(size_t(1), size_t(N+1), [&](size_t i) {
                     for (int j = 1; j <= N; j++) {
                         x[IX(i, j)] = (x0[IX(i, j)] + a*(x[IX(i - 1, j)] + x[IX(i + 1, j)] + x[IX(i, j - 1)] + x[IX(i, j + 1)])) / c;
                     }
 
                     set_boundary(N, b, x);
-                });
                 //});
+            //});
 
-                    //}
+                }
             }
         }
 
