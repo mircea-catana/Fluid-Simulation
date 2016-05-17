@@ -54,33 +54,37 @@ namespace Fluid {
             }
         }
 
-        std::vector<float>* fluid_density(int meshWidth, int meshHeight) {
-            if (alphas.size() != meshWidth * meshHeight) {
-                alphas = std::vector<float>(meshWidth * meshHeight);
+        std::vector<float>* fluid_density(int meshSize) {
+            if (alphas.size() != meshSize * meshSize * meshSize) {
+                alphas = std::vector<float>(meshSize * meshSize * meshSize);
             }
 
-            float wFactor = (float)gridSize / (meshWidth + 1);
-            float hFactor = (float)gridSize / (meshHeight + 1);
-            float wIndex = 0.0f;
-            float hIndex = 0.0f;
+            float incrementFactor = (float)gridSize / (meshSize + 1);
+            float xIndex = 0.0f;
+            float yIndex = 0.0f;
+            float zIndex = 0.0f;
 
-            for (unsigned y = 0; y < meshHeight; ++y) {
-                int closestY = clamp(round(hIndex), 0, gridSize - 1);
-                for (unsigned x = 0; x < meshWidth; ++x) {
-                    int closestX = clamp(round(wIndex), 0, gridSize - 1);
+            for (unsigned z = 0; z < meshSize; ++z) {
+                int closestZ = clamp(round(zIndex), 0, gridSize - 1);
 
-                    // Add up along Z
-                    float sum = 0.0f;
-                    for (unsigned z = 0; z < gridSize; ++z) {
-                        sum += density[XYZ(z, closestY, closestX, gridSize)];
+                for (unsigned y = 0; y < meshSize; ++y) {
+                    int closestY = clamp(round(yIndex), 0, gridSize - 1);
+
+                    for (unsigned x = 0; x < meshSize; ++x) {
+                        int closestX = clamp(round(xIndex), 0, gridSize - 1);
+
+                        alphas[ZYX(z, y, x, meshSize)] = density[ZYX(closestZ, closestY, closestX, gridSize)];
+                        
+                        xIndex += incrementFactor;
                     }
-                    sum /= gridSize;
 
-                    alphas[XY(y, x, meshWidth)] = sum;
-                    wIndex += wFactor;
+                    xIndex = 0.0f;
+                    yIndex += incrementFactor;
                 }
-                wIndex = 0.0f;
-                hIndex += hFactor;
+
+                xIndex = 0.0f;
+                yIndex = 0.0f;
+                zIndex += incrementFactor;
             }
 
             return &alphas;
@@ -104,16 +108,16 @@ namespace Fluid {
             std::fill(prev_vz.begin(), prev_vz.end(), 0.0f);
             std::fill(prev_density.begin(), prev_density.end(), 0.0f);
 
-            float s = sin(frameNumber * 0.01f);
-            float c = cos(frameNumber * 0.01f);
+            float s = sin(frameNumber * 0.002f);
+            float c = cos(frameNumber * 0.002f);
 
             int hSize = gridSize / 2;
 
             // Sources
-            density[XYZ(hSize, hSize, hSize, gridSize)] += gridSize * dt * 3.0f;
-            x[XYZ(hSize, hSize, hSize, gridSize)] += s * gridSize * dt;
-            y[XYZ(hSize, hSize, hSize, gridSize)] += c * gridSize * dt;
-            z[XYZ(hSize, hSize, hSize, gridSize)] += (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
+            density[ZYX(hSize, hSize, hSize, gridSize)] += gridSize * dt;
+            x[ZYX(hSize, hSize, hSize, gridSize)] += s * gridSize * dt;
+            y[ZYX(hSize, hSize, hSize, gridSize)] += c * gridSize * dt;
+            z[ZYX(hSize, hSize, hSize, gridSize)] += (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
             // End Sources
             
            // solver.vorticity(N, x, y, z, dt, 150);

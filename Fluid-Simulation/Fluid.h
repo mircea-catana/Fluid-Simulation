@@ -50,9 +50,9 @@ namespace Fluid {
         void clear() {
             for (unsigned y = 0; y < gridHeight; ++y) {
                 for (unsigned x = 0; x < gridWidth; ++x) {
-                    density[XY(y, x, gridWidth)] = 0.0;
+                    density[YX(y, x, gridWidth)] = 0.0;
                     // Equivalent of 27 deg Celsius on Kelvin scale
-                    temp[XY(y, x, gridWidth)] = 300;
+                    temp[YX(y, x, gridWidth)] = 300;
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace Fluid {
                     int closestX = round(wIndex);
                     closestX = (closestX < 0) ? 0 : closestX;
                     closestX = (closestX > gridWidth - 1) ? gridWidth - 1 : closestX;
-                    alphas[XY(y, x, meshWidth)] = density[XY(closestY, closestX, gridWidth)];
+                    alphas[YX(y, x, meshWidth)] = density[YX(closestY, closestX, gridWidth)];
                     wIndex += wFactor;
                 }
                 wIndex = 0.0f;
@@ -106,9 +106,9 @@ namespace Fluid {
             int hw = gridWidth / 2;
             int hh = gridHeight / 2;
 
-            density[XY(hh, hw, gridWidth)] += gridWidth * dt;
-            u[XY(hh, hw, gridWidth)] += c*(gridWidth * dt);
-            v[XY(hh, hw, gridWidth)] +=  s*(gridWidth * dt);
+            density[YX(hh, hw, gridWidth)] += gridWidth * dt;
+            u[YX(hh, hw, gridWidth)] += c*(gridWidth * dt);
+            v[YX(hh, hw, gridWidth)] +=  s*(gridWidth * dt);
 
             // Adding temperature influence to verical velocity
  /*          float alpha = 4.0, beta = 2.0;
