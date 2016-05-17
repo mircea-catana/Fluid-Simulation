@@ -82,7 +82,7 @@ namespace Fluid {
             mesh = new Mesh();
             mesh->CreateGrid(150, 150);
 
-            fluid = new Fluid(75, 75);
+            fluid = new Fluid(150, 150);
             fluid->clear();
         }
 
