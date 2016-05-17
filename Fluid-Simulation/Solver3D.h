@@ -147,8 +147,10 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
 
         }
 
-        void decay(int N, float *vx, float *vy, float *vz, float *vx0, float *vy0, float *vz0, float visc, float dt) {
-
+        void decay(int N, float *d, float dt, float delta) {
+            FOR_CELL
+                d[ind] *= std::expf(-delta*dt);
+            END_FOR_CELL
         }
 
 
