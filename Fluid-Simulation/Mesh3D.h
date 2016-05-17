@@ -63,7 +63,7 @@ namespace Fluid {
                         indices.push_back((z)   *size2 + (y+1) *size + (x+1));
                         indices.push_back((z)   *size2 + (y+1) *size + (x));
 
-                        // Right
+ /*                       // Right
                         indices.push_back((z)   *size2 + (y)   *size + (x+1));
                         indices.push_back((z+1) *size2 + (y)   *size + (x+1));
                         indices.push_back((z)   *size2 + (y+1) *size + (x+1));
@@ -71,7 +71,7 @@ namespace Fluid {
                         indices.push_back((z)   *size2 + (y+1) *size + (x+1));
                         indices.push_back((z+1) *size2 + (y)   *size + (x+1));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x+1));
-
+*/
                         // Back
                         indices.push_back((z+1) *size2 + (y)   *size + (x));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x+1));
@@ -81,7 +81,7 @@ namespace Fluid {
                         indices.push_back((z+1) *size2 + (y+1) *size + (x));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x+1));
 
-                        // Left
+    /*                    // Left
                         indices.push_back((z)   *size2 + (y)   *size + (x));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x));
                         indices.push_back((z+1) *size2 + (y)   *size + (x));
@@ -107,6 +107,7 @@ namespace Fluid {
                         indices.push_back((z)   *size2 + (y+1) *size + (x+1));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x+1));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x));
+                        */
                     }
                 }
             }

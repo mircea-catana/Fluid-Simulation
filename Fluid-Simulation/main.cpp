@@ -1,7 +1,7 @@
 #include "FluidSimulator.h"
 
-const int window_width = 1024;
-const int window_height = 768;
+const int window_width =  1024;
+const int window_height =  768;
 
 int main(int argc, char **argv) {
 

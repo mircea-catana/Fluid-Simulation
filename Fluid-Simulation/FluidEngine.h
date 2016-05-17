@@ -161,8 +161,8 @@ namespace Fluid {
                 fluid->clear();
             } else if (fluidMode == _3D) {
                 mesh3D = new Mesh3D();
-                mesh3D->CreateCube(20);
-                fluid3D = new Fluid3D(20);
+                mesh3D->CreateCube(30);
+                fluid3D = new Fluid3D(30);
                 fluid3D->clear();
             }
         }

@@ -114,16 +114,16 @@ namespace Fluid {
             int hSize = gridSize / 2;
 
             // Sources
-            density[ZYX(hSize, hSize, hSize, gridSize)] += gridSize * dt;
-            x[ZYX(hSize, hSize, hSize, gridSize)] += s * gridSize * dt;
-            y[ZYX(hSize, hSize, hSize, gridSize)] += c * gridSize * dt;
-            //z[ZYX(hSize, hSize, hSize, gridSize)] += (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
+            density[ZYX(hSize, hSize, hSize, gridSize)] += 0.5*gridSize * dt;
+            x[ZYX(hSize, hSize, hSize, gridSize)] += 0.0; // gridSize * dt;
+            y[ZYX(hSize, hSize, hSize, gridSize)] += std::abs(c) * gridSize * dt;
+            z[ZYX(hSize, hSize, hSize, gridSize)] += 0.0; // (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
             // End Sources
             
-           // solver.vorticity(N, x, y, z, dt, 150);
+            solver.vorticity(N, x, y, z, dt, 50);
             solver.velocity_step(N, x, y, z, x0, y0, z0, visc, dt);
             solver.density_step(N, x, y, z, dens, dens0, diff, dt);
-           // solver.decay(N, dens, dt, 0.1); 
+            solver.decay(N, dens, dt, 0.1); 
         }
 
         Vec3 get_rgb() {
