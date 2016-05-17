@@ -123,15 +123,16 @@ namespace Fluid {
 
         void create_scene() {
             mesh = new Mesh();
+
             fluidMode = _3D;
 
             if (fluidMode == _2D) {
                 mesh->CreateGrid(150, 150);
-                fluid = new Fluid(75, 75);
+                fluid = new Fluid(150, 150);
                 fluid->clear();
             } else if (fluidMode == _3D) {
-                mesh->CreateGrid(50, 50);
-                fluid3D = new Fluid3D(50);
+                mesh->CreateGrid(25, 25);
+                fluid3D = new Fluid3D(25);
                 fluid3D->clear();
             }
         }

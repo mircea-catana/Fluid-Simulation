@@ -146,6 +146,8 @@ namespace Fluid {
 
         Solver() {
             _mode = ForwardEuler;
+          //  _mode = RK2;
+          //  _mode = RK4;
         }
 
 
@@ -180,17 +182,66 @@ namespace Fluid {
         }
 
         void someVorticity(int N, float *u, float *v, float dt, float k) {
-            auto IX = [=](int i, int j) { return i + (N + 2)*j; };
-            auto Vort = [=](int i, int j) { return 0.5*(v[IX(i + 1, j)] - v[IX(i - 1, j)] + u[IX(i, j - 1)] - u[IX(i, j + 1)])*dt; };
+        //   2D implementation adapted from intro in "The Development and Applications of a Numerical Method for Compressible Vorticity Confinement in Vortex-Dominant Flows"
+        //     by  Guangchu Hu
+        // k = 5000 seems to give nice results using Forward Euler
+        // k = 10000 for RK4
 
-            float vorticity = 0.0;
+
+            auto IX = [=](int i, int j) { return i + (N + 2)*j; };
+            auto Vort = [=](int i, int j) { return -0.5f*(v[IX(i + 1, j)] - v[IX(i - 1, j)] + u[IX(i, j - 1)] - u[IX(i, j + 1)])*dt; };
+
+            float centroidX, centroidY, m;
+
             for (int i = 2; i <= N - 1; i++) {
                 for (int j = 2; j <= N - 1; j++) {
-                    vorticity = k*Vort(i, j);
-                    u[IX(i, j + 1)] += vorticity;
-                    u[IX(i, j - 1)] += vorticity;
-                    v[IX(i - 1, j)] += vorticity;
-                    v[IX(i + 1, j)] += vorticity;
+
+                    centroidX = 0.5f*(Vort(i + 1, j) - Vort(i - 1, j));
+                    centroidY = 0.5f*(Vort(i, j+1) - Vort(i, j-1));
+
+                    m = std::sqrtf(centroidX*centroidX + centroidY*centroidY);
+
+                    if (m < 0.00000001) {
+                        u[IX(i, j)] += 0;
+                        v[IX(i, j)] += 0;
+                    } else {
+                       // u[IX(i, j)] += k*dt*centroidX*Vort(i, j) / (m*N);
+                       // v[IX(i, j)] += k*dt*centroidY*Vort(i, j) / (m*N);
+
+                        
+                        u[IX(i, j + 1)] += k*dt*centroidX*Vort(i,j)/(m*N);
+                        u[IX(i, j - 1)] += k*dt*centroidX*Vort(i,j)/(m*N);
+                        v[IX(i - 1, j)] += k*dt*centroidY*Vort(i, j)/(m*N);
+                        v[IX(i + 1, j)] += k*dt*centroidY*Vort(i, j)/(m*N);
+                    }
+                }
+            }
+
+        }
+
+        void tweaking(int N, float *T, float *d, float dt) {
+        // adapted from Bridson's "Fluid Simulation for Computer Graphics", Smoke section.
+        // Remains to see the benefit of it.
+            auto IX = [=](int i, int j) { return i + (N + 2)*j; };
+
+            float rt, rd, Ttarget = 273;
+
+            for (int i = 1; i <= N; i++) {
+                for (int j = 1; j <= N; j++) {
+                    rt = i-j;
+                    rd = j-i;
+                    T[IX(i, j)] += (1 - std::expf(-rt*dt))*(Ttarget - T[IX(i, j)]);
+                    d[IX(i, j)] += rd*dt;
+                }
+            }
+        }
+
+        void decay(int N, float *q, float d, float dt) {
+            auto IX = [=](int i, int j) { return i + (N + 2)*j; };
+
+            for (int i = 1; i <= N; i++) {
+                for (int j = 1; j <= N; j++) {
+                    q[IX(i, j)] *= std::expf(-d*dt);
                 }
             }
 

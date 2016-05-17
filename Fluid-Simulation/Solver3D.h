@@ -109,6 +109,49 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
             project(N, vx, vy, vz, vx0, vy0);
         }
 
+        void vorticity(int N, float *vx, float *vy, float *vz, float dt, float Epsilon) {
+
+            // PDE to calculate Curl using central differences
+            auto Vortx = [=](int i, int j, int k) { return 0.5f*(vz[IJK(i, j+1, k, N)] - vz[IJK(i, j-1, k, N)] + vy[IJK(i, j, k-1, N)] - vy[IJK(i, j, k+1, N)])*dt; };
+            auto Vorty = [=](int i, int j, int k) { return 0.5f*(vx[IJK(i, j, k+1, N)] - vx[IJK(i, j, k-1, N)] + vz[IJK(i-1, j, k, N)] - vz[IJK(i+1, j, k, N)])*dt; };
+            auto Vortz = [=](int i, int j, int k) { return 0.5f*(vy[IJK(i+1, j, k, N)] - vy[IJK(i-1, j, k, N)] + vx[IJK(i, j-1, k, N)] - vx[IJK(i, j+1, k, N)])*dt; };
+           
+            //w = curl = gradient x field, nc = directional vector from less vorticity to more vorticity.
+            // fb, vorticity confinement force.
+            Vec3 w, nc, fb; 
+            
+            for (int x = 2; x <= N - 1; ++x) {
+                for (int y = 2; y <= N - 1; ++y) {
+                    for (int z = 2; z <= N - 1; ++z) {
+                        int ind = IJK(x, y, z, N);
+                        w.set_x( Vortx(x, y, z) );
+                        w.set_y( Vorty(x, y, z) );
+                        w.set_z( Vortz(x, y, z) );
+                        float sigma = std::sqrtf( w.get_x()*w.get_x() + w.get_y()*w.get_y() + w.get_y()*w.get_y() );
+                        if (sigma < 0.00000001) {
+                            nc.set_x(0);
+                            nc.set_y(0);
+                            nc.set_z(0);
+                        } else {
+                            nc.set_x( -0.5*(Vortx(x + 1, y, z) - Vortx(x - 1, y, z))*dt / sigma );
+                            nc.set_y( -0.5*(Vortx(x, y + 1, z) - Vortx(x, y - 1, z))*dt / sigma );
+                            nc.set_z( -0.5*(Vortx(x, y, z + 1) - Vortx(x, y, z - 1))*dt / sigma );
+                        }
+                        fb = nc.cross(w)*(-Epsilon);
+                        vx[ind] += fb.get_x();
+                        vy[ind] += fb.get_y();
+                        vz[ind] += fb.get_z();
+                    }
+                }
+            }
+
+        }
+
+        void decay(int N, float *vx, float *vy, float *vz, float *vx0, float *vy0, float *vz0, float visc, float dt) {
+
+        }
+
+
     };
 
 #undef FOR_CELL
