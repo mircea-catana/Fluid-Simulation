@@ -117,7 +117,7 @@ namespace Fluid {
             density[ZYX(hSize, hSize, hSize, gridSize)] += gridSize * dt;
             x[ZYX(hSize, hSize, hSize, gridSize)] += s * gridSize * dt;
             y[ZYX(hSize, hSize, hSize, gridSize)] += c * gridSize * dt;
-            z[ZYX(hSize, hSize, hSize, gridSize)] += (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
+            //z[ZYX(hSize, hSize, hSize, gridSize)] += (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
             // End Sources
             
            // solver.vorticity(N, x, y, z, dt, 150);

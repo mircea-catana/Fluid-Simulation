@@ -9,6 +9,11 @@ uniform mat4 worldToView;
 uniform mat4 viewToProjection;
 
 void main() {
+    mat4 rot = mat4(vec4(cos(45.0), 0.0, sin(45.0), 0.0), 
+                    vec4(0.0, 1.0, 0.0, 0.0f),
+                    vec4(-sin(45.0), 0.0, cos(45.0), 0.0),
+                    vec4(0.0, 0.0, 0.0, 1.0));
+    mat4 x = modelToWorld * rot;
     mat4 modelToView = worldToView * modelToWorld;
     vec4 viewPos = modelToView * vec4(in_position, 1.0);
     gl_Position = viewToProjection * viewPos;

@@ -107,7 +107,6 @@ namespace Fluid {
                         indices.push_back((z)   *size2 + (y+1) *size + (x+1));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x+1));
                         indices.push_back((z+1) *size2 + (y+1) *size + (x));
-
                     }
                 }
             }

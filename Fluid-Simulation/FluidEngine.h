@@ -91,21 +91,21 @@ namespace Fluid {
                 for (unsigned y = 0; y < size; ++y) {
                     for (unsigned x = 0; x < size; ++x) {
                         // Edge vertex
-                        //if (x == 0 || x == size - 1 || y == 0 || y == size - 1 || z == 0 || z == size - 1) {
+                        if (x == 0 || x == size - 1 || y == 0 || y == size - 1 || z == 0 || z == size - 1) {
                             vertexColor = Vec4(fluid3D->get_rgb(), alpha->at(ZYX(z, y, x, size)));
                             bufferData[ZYX(z, y, x, size)].set_color(vertexColor);
 
                             // Interior vertex
-                        /*} else {
+                        } else {
 
-                            float a1 = (alpha->at(YX(ny, x, width)) + alpha->at(YX(y, ex, width)) +
-                                        alpha->at(YX(sy, x, width)) + alpha->at(YX(y, wx, width))) / 4.0f;
-                            float a2 = (alpha->at(YX(ny, ex, width)) + alpha->at(YX(sy, ex, width)) +
-                                        alpha->at(YX(sy, wx, width)) + alpha->at(YX(ny, wx, width))) / 4.0f;
+                            float a1 = alpha->at(ZYX(z, y, x - 1, size)) + alpha->at(ZYX(z, y, x + 1, size)) +
+                                       alpha->at(ZYX(z, y - 1, x, size)) + alpha->at(ZYX(z, y + 1, x, size));
+                            float a2 = alpha->at(ZYX(z-1, y, x - 1, size)) + alpha->at(ZYX(z-1, y, x + 1, size)) +
+                                       alpha->at(ZYX(z-1, y - 1, x, size)) + alpha->at(ZYX(z-1, y + 1, x, size));
 
                             vertexColor = Vec4(fluid3D->get_rgb(), (a1 + a2) / 2.0f);
-                            bufferData[YX(y, x, width)].set_color(vertexColor);
-                        }*/
+                            bufferData[ZYX(z, y, x, size)].set_color(vertexColor);
+                        }
                     }
                 }
             }
@@ -166,7 +166,9 @@ namespace Fluid {
                 fluid3D->clear();
             }
         }
+        
 
+        // Should move to own class
         void set_perspective_camera() {
             float fovy = 60.0f;
             float aspect = (float)1024 / 768;
