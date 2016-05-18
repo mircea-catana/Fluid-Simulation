@@ -2,7 +2,7 @@ namespace Fluid {
     
     class FluidEngine {
     private:
-        const int MAX_IMAGES_RENDERED = 500;
+        const int MAX_IMAGES_RENDERED = 1250;
 
         FluidMode fluidMode;
         RenderMode renderMode;
@@ -19,6 +19,7 @@ namespace Fluid {
 
         Mesh *mesh;
         Mesh3D *mesh3D;
+        Mesh3D *containingCube;
 
         Fluid *fluid;
         Fluid3D *fluid3D;
@@ -155,23 +156,34 @@ namespace Fluid {
 
             GLuint frameNumberPosition = glGetUniformLocation(currentShaderProgram, "frameNumber");
             if (fluidMode == THREE_DIM) {
-                glUniform1f(frameNumberPosition, frameCounter / 60.0f);
+                glUniform1f(frameNumberPosition, frameCounter / 150.0f);
             } else {
                 glUniform1f(frameNumberPosition, 0.0f);
             }
 
             if (fluidMode == TWO_DIM) {
                 update_colors_2D();
+
                 glBindVertexArray(mesh->get_vao());
+                glEnable(GL_DEPTH_TEST);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 glDrawElements(GL_TRIANGLES, mesh->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
-                glBindVertexArray(0);
+                
             } else if (fluidMode == THREE_DIM) {
                 update_colors_3D();
+
                 glBindVertexArray(mesh3D->get_vao());
+                glDisable(GL_DEPTH_TEST);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                 glDrawElements(GL_TRIANGLES, mesh3D->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
-                glBindVertexArray(0);
+
+                glBindVertexArray(containingCube->get_vao());
+                glEnable(GL_DEPTH_TEST);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glDrawElements(GL_QUADS, containingCube->get_indices()->size(), GL_UNSIGNED_INT, (void*)0);
             }
 
+            glBindVertexArray(0);
             SDL_GL_SwapWindow(window);
         }
 
@@ -191,10 +203,13 @@ namespace Fluid {
                 set_perspective_camera(60.0f, aspect, 0.1f, 100.0f);
                 set_camera_position(Vec3(0.0f, 0.0f, -3.0f));
 
-                mesh3D = new Mesh3D();
-                mesh3D->CreateCube(100);
+                containingCube = new Mesh3D();
+                containingCube->CreateQuadCube(2);
 
-                fluid3D = new Fluid3D(100);
+                mesh3D = new Mesh3D();
+                mesh3D->CreateCube(30);
+
+                fluid3D = new Fluid3D(30);
                 fluid3D->clear();
             }
         }
@@ -269,13 +284,12 @@ namespace Fluid {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glClearDepth(1.0f);
-            glClearColor(0.08f, 0.18f, 0.35f, 1.0f);
+            glClearColor(0.28f, 0.3f, 0.45f, 1.0f);
 
             create_scene();
 
             shaderLoader = new ShaderLoader();
             currentShaderProgram = shaderLoader->CreateProgram("Shaders\\SmokeVS.glsl", "Shaders\\SmokeFS.glsl");
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             if (renderMode == IMAGE) {
                 imagePixels = new std::vector<unsigned char>(windowWidth * windowHeight * 4);
