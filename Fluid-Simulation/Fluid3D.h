@@ -108,22 +108,27 @@ namespace Fluid {
             std::fill(prev_vz.begin(), prev_vz.end(), 0.0f);
             std::fill(prev_density.begin(), prev_density.end(), 0.0f);
 
-            float s = sin(frameNumber * 0.002f);
-            float c = cos(frameNumber * 0.002f);
+            float s = sin(frameNumber * 0.02f);
+            float c = cos(frameNumber * 0.02f);
 
             int hSize = gridSize / 2;
 
             // Sources
-            density[ZYX(hSize, hSize, hSize, gridSize)] += 0.5*gridSize * dt;
-            x[ZYX(hSize, hSize, hSize, gridSize)] += 0.0; // gridSize * dt;
-            y[ZYX(hSize, hSize, hSize, gridSize)] += std::abs(c) * gridSize * dt;
-            z[ZYX(hSize, hSize, hSize, gridSize)] += 0.0; // (1.0f - (c + 1.0f) / 2.0f) * gridSize * dt;
+            // Mushroom Emission
+            density[ZYX(hSize, hSize/2, hSize, gridSize)] += 3.5f * 3.5f * dt;
+            y[ZYX(hSize, hSize / 2, hSize, gridSize)] += /*abs(-s)*/ 1.0f * gridSize;
+
+            // Upwards Cone Emission
+            /*density[ZYX(hSize, hSize / 2, hSize, gridSize)] += 2.0f * dt;
+            x[ZYX(hSize, hSize / 2, hSize, gridSize)] += c * gridSize * dt;
+            y[ZYX(hSize, hSize / 2, hSize, gridSize)] += abs(s * gridSize * dt);
+            z[ZYX(hSize, hSize, hSize, gridSize)] += abs(c * gridSize * dt);*/
             // End Sources
             
-            solver.vorticity(N, x, y, z, dt, 50);
+            //solver.vorticity(N, x, y, z, dt, 50);
             solver.velocity_step(N, x, y, z, x0, y0, z0, visc, dt);
             solver.density_step(N, x, y, z, dens, dens0, diff, dt);
-            solver.decay(N, dens, dt, 0.1); 
+            //solver.decay(N, dens, dt, 0.1); 
         }
 
         Vec3 get_rgb() {

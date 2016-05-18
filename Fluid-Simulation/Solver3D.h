@@ -172,9 +172,9 @@ auto IJK = [](int i, int j, int k, int N) { return i + (N + 2)*j + (N + 2) * (N 
             for (int i = 1; i <= N; i++) {
                 for (int j = 1; i <= N; i++) {
                     x[IJK(0, i, j, N)] = b == 1 ? -x[IJK(1, i, j, N)] : x[IJK(1, i, j, N)];
-                    x[IJK(N + 1, i, j, N)] = b == 1 ? -x[IJK(N, i, j, N)] : x[IJK(N, i, j, N)];
+                    x[IJK(N+1, i, j, N)] = b == 1 ? -x[IJK(N, i, j, N)] : x[IJK(N, i, j, N)];
 
-                    x[IJK(i, 0, j, N)] = b == 2 ? -x[IJK(i, 0, j, N)] : x[IJK(i, 0, j, N)];
+                    x[IJK(i, 0, j, N)] = b == 2 ? -x[IJK(i, 1, j, N)] : x[IJK(i, 1, j, N)];
                     x[IJK(i, N+1, j, N)] = b == 2 ? -x[IJK(i, N, j, N)] : x[IJK(i, N, j, N)];
 
                     x[IJK(i, j, 0, N)] = b == 3 ? -x[IJK(i, j, 1, N)] : x[IJK(i, j, 1, N)];
