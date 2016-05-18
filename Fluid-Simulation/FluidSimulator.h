@@ -1,10 +1,12 @@
 #ifndef FLUID_SIMULATOR_H
 #define FLUID_SIMULATOR_H
 
-auto YX = [](int y, int x, int w) { return y*w + x; };
+auto YX = [](int y, int x, int N) { return y*N + x; };
 auto ZYX = [](int z, int y, int x, int N) { return z*N*N + y*N + x; };
-namespace Fluid {
 
+namespace Fluid {
+    enum FluidMode { TWO_DIM, THREE_DIM };
+    enum RenderMode { SCREEN, IMAGE };
 }
 
 // DPENDENCIES
@@ -13,11 +15,13 @@ namespace Fluid {
 #include <iostream>
 #include <fstream>
 #include <ppl.h>
+#include <string>
 #include <vector>
 #include <valarray>
 #include <memory>
 #include <SDL/SDL.h>
 #include <GL/glew.h>
+#include "lodepng.h"
 
 // LOCAL
 #include "Vec3.h"

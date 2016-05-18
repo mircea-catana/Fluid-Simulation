@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lodepng.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="Fluid3D.h" />
     <ClInclude Include="FluidEngine.h" />
     <ClInclude Include="FluidSimulator.h" />
+    <ClInclude Include="lodepng.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mesh3D.h" />
     <ClInclude Include="ShaderLoader.h" />
