@@ -115,14 +115,14 @@ namespace Fluid {
 
             // Sources
             // Mushroom Emission
-            //density[ZYX(hSize, hSize / 4, hSize, gridSize)] += 3.5f * 3.0f * dt;
-            //y[ZYX(hSize, hSize / 4, hSize, gridSize)] += /*abs(-s)*/ 0.5f * gridSize;
+            density[ZYX(hSize, hSize + hSize / 4, hSize, gridSize)] += 3.5f * 3.0f * dt;
+            y[ZYX(hSize, hSize / 4, hSize, gridSize)] += /*abs(-s)*/ 0.5f * gridSize;
 
             // Upwards Cone Emission
-            density[ZYX(hSize, hSize / 2, hSize, gridSize)] += 2.0f * dt;
-            x[ZYX(hSize, hSize / 2, hSize, gridSize)] += c * gridSize * dt;
-            y[ZYX(hSize, hSize / 2, hSize, gridSize)] += abs(s * gridSize * dt);
-            z[ZYX(hSize, hSize, hSize, gridSize)] += abs(c * gridSize * dt);
+            //density[ZYX(hSize, hSize / 2, hSize, gridSize)] += 2.0f * dt;
+            //x[ZYX(hSize, hSize / 2, hSize, gridSize)] += c * gridSize * dt;
+            //y[ZYX(hSize, hSize / 2, hSize, gridSize)] += abs(s * gridSize * dt);
+            //z[ZYX(hSize, hSize, hSize, gridSize)] += abs(c * gridSize * dt);
             // End Sources
             
             //solver.vorticity(N, x, y, z, dt, 50);
